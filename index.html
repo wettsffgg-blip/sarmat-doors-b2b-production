@@ -175,13 +175,14 @@ footer{padding:45px 0;border-top:1px solid #183a50;background:#03121e;color:#a9b
 <div class="field"><label>Внутренняя</label><select id="innerLmdfFinish"><option value="laminated">Ламинированная</option><option value="painted">Крашеная</option><option value="veneered">Шпонированная</option></select></div>
 <div class="field"><label>Толщина</label><select id="innerLmdfThickness"><option value="8">8 мм</option><option value="10">10 мм</option></select></div>
 <div class="field"><label>Контуры уплотнения</label><select id="sealContours"><option value="2">2 контура</option><option value="3">3 контура</option></select></div>
+<div class="field"><label>Ночник</label><select id="nightLock"><option value="1">Да</option><option value="0">Нет</option></select></div>
 <div class="field"><label>Нижний замок с ручкой</label><select id="lockSystem"><option value="mechanical">Обычный механический</option><option value="electronic">Электронный</option></select></div>
 <div class="field" id="mechanicalLockField"><label>Вариант обычного замка</label><select id="mechanicalLock"><option value="basic">Цилиндровый усиленный</option><option value="security">Цилиндровый повышенной защиты</option><option value="premium">Премиальный сувальдно-цилиндровый</option></select></div>
 <div class="field" id="electronicLockField" style="display:none"><label>Вариант электронного замка</label><select id="electronicLock"><option value="codecard">Код + карта</option><option value="fingerprint">Отпечаток + код + карта</option><option value="smart">Smart: код + карта + приложение</option></select></div>
 <div class="field"><label>Количество замков</label><select id="lockCount"><option value="2">2 замка</option><option value="3">3 замка</option></select></div>
 <div class="field"><label>Верхний сувальдный замок</label><select id="upperLock"><option value="0">Не устанавливать</option><option value="1">Установить дополнительно</option></select></div>
 </div>
-<div class="small" style="margin-top:10px"><b>Состав замковой группы:</b> нижний замок с ручкой — основной, обязательный; с внутренней стороны — отдельная задвижка «ночник», обязательная; верхний сувальдный замок — дополнительный, устанавливается по желанию клиента.</div>
+<div class="small" style="margin-top:10px"><b>Состав замковой группы:</b> нижний замок с ручкой — основной, обязательный; с внутренней стороны — отдельная задвижка «ночник» — по выбору клиента; верхний сувальдный замок — дополнительный, устанавливается по желанию клиента.</div>
 </div>
 <div id="generalHardwareBlock" style="margin-top:20px" class="field"><label>Фурнитура</label><div id="hardwareOptions" class="options"></div><label style="display:flex;align-items:center;gap:10px;margin-top:12px;cursor:pointer"><input id="closer" type="checkbox"> <span>Доводчик дверной — <b>400 000 сум</b></span></label></div>
 <div class="formgrid" style="margin-top:20px">
@@ -204,7 +205,7 @@ footer{padding:45px 0;border-top:1px solid #183a50;background:#03121e;color:#a9b
 <div class="line"><span>Класс</span><strong id="classFactor">EI30</strong></div>
 <div class="line"><span>Сталь полотна</span><strong id="leafLine">1,2 мм</strong></div>
 <div class="line"><span>Сталь коробки</span><strong id="frameLine">1,5 мм</strong></div>
-<div class="line"><span>Фурнитура</span><strong id="hardwareLine">—</strong></div>
+<div class="line" id="hardwareSummaryLine"><span>Фурнитура</span><strong id="hardwareLine">—</strong></div>
 <div class="line"><span>Цвет</span><strong id="colorLine">0 сум</strong></div>
 <div class="line"><span>Монтаж/доставка</span><strong id="installLine">600 000 сум</strong></div>
 <div class="note">Цена рассчитывается по утверждённой формуле конфигуратора. Для стандартного диапазона 800–1600 × 1900–2500 мм стоимость фиксируется выбранными параметрами. Нестандартные конструкции, остекление и специальные узлы рассчитываются отдельно.</div>
@@ -218,7 +219,7 @@ footer{padding:45px 0;border-top:1px solid #183a50;background:#03121e;color:#a9b
 
 <section id="documents">
 <div class="container">
-<div class="section-title"><div><div class="eyebrow">Документы</div><h2>Сертификаты и протоколы испытаний</h2></div><p class="lead">Документы доступны для просмотра и скачивания. В тестовой сборке исходные архивы также сохранены для передачи без изменения.</p></div>
+<div class="section-title"><div><div class="eyebrow">Документы</div><h2>Сертификаты и протоколы испытаний</h2></div><p class="lead">Документы доступны для просмотра и скачивания.</p></div>
 <div class="features">
 <div class="feature"><div class="icon">▣</div><h3>Сертификаты</h3><p>Сертификат соответствия и экспертный документ. Названия разделены, чтобы не выдавать экспертное заключение за сертификат.</p><a class="btn btn-ghost" href="documents/certificates.rar" download>Скачать пакет сертификатов</a></div>
 <div class="feature"><div class="icon">🔥</div><h3>Протоколы EI30–EI120</h3><p>8 протоколов: EI30, EI60, EI90, EI120 для одностворчатых и двухстворчатых дверей.</p><a class="btn btn-ghost" href="documents/test_protocols_EI30_EI60_EI90_EI120.rar" download>Скачать протоколы</a></div>
@@ -296,7 +297,7 @@ function makeOptions(){
  if(technical && selectedHardware==='panic') selectedHardware='fuaro';
  document.getElementById('classOptions').innerHTML=activeClasses.map(x=>`<button type="button" class="option ${x[0]===selectedClass?'active':''}" data-class="${x[0]}">${x[0]}</button>`).join('');
  const hardwareOptions=technical?hardware.filter(x=>x[0]==='fuaro'):hardware;
- document.getElementById('hardwareOptions').innerHTML=hardwareOptions.map(x=>`<button type="button" class="option ${x[0]===selectedHardware?'active':''}" data-hw="${x[0]}">${x[2]} · ${money(x[1])}</button>`).join(''); const generalHardwareBlock=document.getElementById('generalHardwareBlock'); if(generalHardwareBlock) generalHardwareBlock.style.display=apartment?'none':'';
+ document.getElementById('hardwareOptions').innerHTML=hardwareOptions.map(x=>`<button type="button" class="option ${x[0]===selectedHardware?'active':''}" data-hw="${x[0]}">${x[2]} · ${money(x[1])}</button>`).join(''); const generalHardwareBlock=document.getElementById('generalHardwareBlock'); if(generalHardwareBlock) generalHardwareBlock.style.display=apartment?'none':''; const hardwareSummaryLine=document.getElementById('hardwareSummaryLine'); if(hardwareSummaryLine) hardwareSummaryLine.style.display=apartment?'none':'';
  document.querySelectorAll('[data-class]').forEach(b=>b.onclick=()=>{selectedClass=b.dataset.class;makeOptions();calc()});
  document.querySelectorAll('[data-hw]').forEach(b=>b.onclick=()=>{selectedHardware=b.dataset.hw;makeOptions();calc()});
  const lockSystem=document.getElementById('lockSystem');
@@ -340,13 +341,13 @@ function calc(){
  if(apartment){
    const outerFinish=document.getElementById('outerLmdfFinish').value, outerThickness=Number(document.getElementById('outerLmdfThickness').value);
    const innerFinish=document.getElementById('innerLmdfFinish').value, innerThickness=Number(document.getElementById('innerLmdfThickness').value);
-   const sealContours=Number(document.getElementById('sealContours').value), lockSystem=document.getElementById('lockSystem').value;
+   const sealContours=Number(document.getElementById('sealContours').value), nightLock=Number(document.getElementById('nightLock').value)===1, lockSystem=document.getElementById('lockSystem').value;
    const mechanicalLock=document.getElementById('mechanicalLock').value, electronicLock=document.getElementById('electronicLock').value, upperLock=Number(document.getElementById('upperLock').value);
    const outerCost=apartmentPricing.outerLmdf[outerFinish][outerThickness], innerCost=apartmentPricing.innerLmdf[innerFinish][innerThickness];
    const lowerLockCost=lockSystem==='electronic'?apartmentPricing.electronicLock[electronicLock]:apartmentPricing.lowerLock[mechanicalLock];
    const upperCost=upperLock?apartmentPricing.upperLock:0;
-   optionsCost=outerCost+innerCost+apartmentPricing.sealContours[sealContours]+apartmentPricing.nightLock+lowerLockCost+upperCost;
-   apartmentDetails={outerLmdfFinish:outerFinish,outerLmdfThickness,outerLmdfCost:outerCost,innerLmdfFinish:innerFinish,innerLmdfThickness,innerLmdfCost:innerCost,sealContours,sealCost:apartmentPricing.sealContours[sealContours],lockSystem,mechanicalLock,electronicLock,lockLabel:lockSystem==='electronic'?document.getElementById('electronicLock').selectedOptions[0].textContent:document.getElementById('mechanicalLock').selectedOptions[0].textContent,nightLockCost:apartmentPricing.nightLock,lowerLockCost,upperLock,upperLockCost:upperCost};
+   optionsCost=outerCost+innerCost+apartmentPricing.sealContours[sealContours]+(nightLock?apartmentPricing.nightLock:0)+lowerLockCost+upperCost;
+   apartmentDetails={outerLmdfFinish:outerFinish,outerLmdfThickness,outerLmdfCost:outerCost,innerLmdfFinish:innerFinish,innerLmdfThickness,innerLmdfCost:innerCost,sealContours,sealCost:apartmentPricing.sealContours[sealContours],lockSystem,mechanicalLock,electronicLock,lockLabel:lockSystem==='electronic'?document.getElementById('electronicLock').selectedOptions[0].textContent:document.getElementById('mechanicalLock').selectedOptions[0].textContent,nightLock,nightLockCost:nightLock?apartmentPricing.nightLock:0,lowerLockCost,upperLock,upperLockCost:upperCost};
  }
  const base=area*BASE*factor, steel=base*((1+leafMarkup/100)*(1+frameMarkup/100)-1), closerCost=closer?CLOSER_PRICE:0;
  const hardwareCost=apartment?0:hw[1]; const total=base+steel+hardwareCost+closerCost+ral.price+inst+optionsCost;
@@ -367,12 +368,25 @@ function validateCurrent(){
  if(c.ral.rare && !/^\d{4}$/.test(document.getElementById('rareRal').value.trim())) errs.push('Для редкого RAL укажите номер из 4 цифр');
  return {c,errs};
 }
-function getCurrent(){const v=validateCurrent();if(v.errs.length){toast('❌ '+v.errs[0]);return null}const c=v.c;const cls=c.doorType==='Техническая'?'—':selectedClass;const hwText=c.apartmentDetails?('Обязательный ночник + '+c.apartmentDetails.lockLabel+(c.apartmentDetails.upperLock?' + верхний сувальдный':'')+(c.closer?' + доводчик':'')).trim():c.hw[2];return {...c,cls,hwText,ralText:c.ral.rare?'RAL '+document.getElementById('rareRal').value.trim():c.ral.code};}
+function getCurrent(){const v=validateCurrent();if(v.errs.length){toast('❌ '+v.errs[0]);return null}const c=v.c;const cls=c.doorType==='Техническая'?'—':selectedClass;const hwText=c.apartmentDetails?('Ночник: '+(c.apartmentDetails.nightLock?'Да':'Нет')+(c.apartmentDetails.upperLock?' · Верхний сувальдный: Да':' · Верхний сувальдный: Нет')).trim():c.hw[2];return {...c,cls,hwText,ralText:c.ral.rare?'RAL '+document.getElementById('rareRal').value.trim():c.ral.code};}
 function save(){localStorage.setItem('sarmatOrder15',JSON.stringify({order,orderId}));}
-function restore(){try{const x=JSON.parse(localStorage.getItem('sarmatOrder15')||'null');if(x?.order){order=x.order.map(v=>({...v,doorType:v.doorType||'Противопожарная'}));orderId=x.orderId||orderId}}catch(e){}}
+function restore(){try{const x=JSON.parse(localStorage.getItem('sarmatOrder15')||'null');if(x?.order){order=x.order.map(v=>({...v,doorType:v.doorType||'Противопожарная',apartmentDetails:v.apartmentDetails?{...v.apartmentDetails,outerLmdfFinish:finishText(v.apartmentDetails.outerLmdfFinish),innerLmdfFinish:finishText(v.apartmentDetails.innerLmdfFinish)}:v.apartmentDetails}));orderId=x.orderId||orderId}}catch(e){}}
+function finishText(v){
+ if(v===null||v===undefined) return '—';
+ if(typeof v==='string'){
+  const key=v.trim().toLowerCase();
+  const map={laminated:'Ламинированная',painted:'Крашеная',veneered:'Шпонированная'};
+  return map[key]||v;
+ }
+ if(typeof v==='object'){
+  const candidate=v.label??v.name??v.text??v.title??v.value??v.finish;
+  if(candidate!==undefined && candidate!==v) return finishText(candidate);
+ }
+ return String(v);
+}
 function renderOrder(){
  const box=document.getElementById('orderList'); if(!order.length){box.innerHTML='<div class="small">Заказ пока пуст. Добавьте одну или несколько позиций.</div>';return}
- box.innerHTML='<h3>Ваш B2B-заказ · '+escapeHtml(orderId)+'</h3>'+order.map((x,i)=>`<div class="position-card"><div style="display:flex;justify-content:space-between;gap:14px"><div><b>Позиция №${i+1}: ${escapeHtml(x.doorType||'Противопожарная')} · ${escapeHtml(x.cls||'—')} · ${escapeHtml(x.w)}×${escapeHtml(x.h)} мм · ${escapeHtml(x.qty)} шт.</b><div class="order-meta"><b>Открывание:</b> ${escapeHtml(x.opening)}<br><b>Полотно:</b> ${escapeHtml(x.leafMm)} мм · <b>Коробка:</b> ${escapeHtml(x.frameMm)} мм<br><b>Фурнитура:</b> ${escapeHtml(x.hwText)}<br>${x.apartmentDetails?`<b>Наружная МДФ:</b> ${escapeHtml(x.apartmentDetails.outerLmdfFinish)} ${escapeHtml(x.apartmentDetails.outerLmdfThickness)} мм · <b>Внутренняя МДФ:</b> ${escapeHtml(x.apartmentDetails.innerLmdfFinish)} ${escapeHtml(x.apartmentDetails.innerLmdfThickness)} мм<br><b>Уплотнение:</b> ${escapeHtml(x.apartmentDetails.sealContours)} контура · <b>Нижний ночник:</b> обязательно · <b>Верхний сувальдный:</b> ${x.apartmentDetails.upperLock?'Да':'Нет'}<br>`:''}<b>Доводчик:</b> ${x.closer?'Да — '+money(CLOSER_PRICE):'Нет'}<br><b>RAL:</b> ${escapeHtml(x.ralText)}<br><b>Монтаж/доставка:</b> ${x.inst?money(x.inst)+' / дверь':'Нет'}</div>${x.comment?`<div class="order-note"><b>Примечание:</b> ${escapeHtml(x.comment)}</div>`:''}</div><div style="text-align:right"><b>${money(x.total*x.qty)}</b><br><button class="remove" data-i="${i}" type="button">Удалить</button></div></div></div>`).join('')+`<div class="line" style="font-size:17px"><span>ИТОГО ПО ЗАКАЗУ</span><strong>${money(order.reduce((s,x)=>s+x.total*x.qty,0))}</strong></div>`;
+ box.innerHTML='<h3>Ваш B2B-заказ · '+escapeHtml(orderId)+'</h3>'+order.map((x,i)=>`<div class="position-card"><div style="display:flex;justify-content:space-between;gap:14px"><div><b>Позиция №${i+1}: ${escapeHtml(x.doorType||'Противопожарная')} · ${escapeHtml(x.cls||'—')} · ${escapeHtml(x.w)}×${escapeHtml(x.h)} мм · ${escapeHtml(x.qty)} шт.</b><div class="order-meta"><b>Открывание:</b> ${escapeHtml(x.opening)}<br><b>Полотно:</b> ${escapeHtml(x.leafMm)} мм · <b>Коробка:</b> ${escapeHtml(x.frameMm)} мм<br>${x.apartmentDetails?`<b>Наружная МДФ:</b> ${escapeHtml(finishText(x.apartmentDetails.outerLmdfFinish))} ${escapeHtml(x.apartmentDetails.outerLmdfThickness)} мм · <b>Внутренняя МДФ:</b> ${escapeHtml(finishText(x.apartmentDetails.innerLmdfFinish))} ${escapeHtml(x.apartmentDetails.innerLmdfThickness)} мм<br><b>Уплотнение:</b> ${escapeHtml(x.apartmentDetails.sealContours)} контура · <b>Ночник:</b> ${x.apartmentDetails.nightLock?'Да':'Нет'} · <b>Верхний сувальдный:</b> ${x.apartmentDetails.upperLock?'Да':'Нет'}<br>`:`<b>Фурнитура:</b> ${escapeHtml(x.hwText)}<br>`}<b>Доводчик:</b> ${x.closer?'Да — '+money(CLOSER_PRICE):'Нет'}<br><b>RAL:</b> ${escapeHtml(x.ralText)}<br><b>Монтаж/доставка:</b> ${x.inst?money(x.inst)+' / дверь':'Нет'}</div>${x.comment?`<div class="order-note"><b>Примечание:</b> ${escapeHtml(x.comment)}</div>`:''}</div><div style="text-align:right"><b>${money(x.total*x.qty)}</b><br><button class="remove" data-i="${i}" type="button">Удалить</button></div></div></div>`).join('')+`<div class="line" style="font-size:17px"><span>ИТОГО ПО ЗАКАЗУ</span><strong>${money(order.reduce((s,x)=>s+x.total*x.qty,0))}</strong></div>`;
  box.querySelectorAll('.remove').forEach(b=>b.onclick=()=>{order.splice(Number(b.dataset.i),1);save();renderOrder()});
 }
 function escapeHtml(s){return String(s).replace(/[&<>'"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[m]))}
@@ -454,7 +468,7 @@ document.getElementById('pdf').onclick=preview;
 document.getElementById('pdf2').onclick=downloadPdf;
 document.getElementById('send').onclick=sendOrder;
 document.getElementById('print').onclick=printProposalDocument;
-['doorType','color','leaf','frame','opening','install','qty','comment','rareRal','outerLmdfFinish','outerLmdfThickness','innerLmdfFinish','innerLmdfThickness','sealContours','mechanicalLock','electronicLock','upperLock'].forEach(id=>document.getElementById(id)?.addEventListener('input',calc));
+['doorType','color','leaf','frame','opening','install','qty','comment','rareRal','outerLmdfFinish','outerLmdfThickness','innerLmdfFinish','innerLmdfThickness','sealContours','nightLock','mechanicalLock','electronicLock','upperLock'].forEach(id=>document.getElementById(id)?.addEventListener('input',calc));
 function syncApartmentQuickButton(){const type=document.getElementById('doorType')?.value;const btn=document.getElementById('apartmentQuick');if(btn) btn.style.display=(type==='Квартирная')?'inline-flex':'none';}
 document.getElementById('doorType').addEventListener('change',()=>{makeOptions();calc();syncApartmentQuickButton()});
 document.getElementById('lockSystem')?.addEventListener('change',()=>{makeOptions();calc()});
