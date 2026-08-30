@@ -247,10 +247,7 @@ footer{padding:45px 0;border-top:1px solid #183a50;background:#03121e;color:#a9b
 
 <script>
 const money=n=>new Intl.NumberFormat('ru-RU').format(Math.round(n))+' сум';
-// Canonical PDF backend. GitHub Pages is static, so PDF generation must always go to Render.
-// A custom domain or preview host must not silently fall back to the static origin.
-const API_BASE=(window.SARMAT_API_BASE || ((location.hostname==='localhost'||location.hostname==='127.0.0.1')?'':'https://sarmat-doors-b2b-test.onrender.com')).replace(/\/$/,'');
-
+const API_BASE='https://sarmat-doors-b2b-production.onrender.com';
 const classes=[['EI30',1],['EI60',1.5],['EI90',2.25],['EI120',3.375]];
 const hardware=[['fuaro',550000,'Fuaro: замок + ручка'],['panic',1100000,'Антипаника: комплект']];
 const CLOSER_PRICE=400000, BASE=1600000, RARE_RAL_PRICE=200000;
@@ -308,29 +305,6 @@ function renderOrder(){
 }
 function escapeHtml(s){return String(s).replace(/[&<>'"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[m]))}
 function toast(t){const x=document.getElementById('toast');x.textContent=t;x.style.display='block';setTimeout(()=>x.style.display='none',3200)}
-function setBusy(ids,busy){ids.forEach(id=>{const el=document.getElementById(id);if(el){el.disabled=busy;el.style.opacity=busy?'0.65':''}})}
-async function fetchWithTimeout(url,opts={},ms=60000){
- const ctl=new AbortController(); const timer=setTimeout(()=>ctl.abort(),ms);
- try{
-   const r=await fetch(url,{...opts,signal:ctl.signal,cache:'no-store'});
-   return r;
- }catch(e){
-   if(e.name==='AbortError') throw new Error('Сервер PDF не ответил за 60 секунд. Проверьте, что Render запущен.');
-   throw new Error('Не удалось подключиться к серверу PDF: '+(e.message||e));
- }finally{clearTimeout(timer)}
-}
-async function checkPdfApi(){
- try{
-   const r=await fetchWithTimeout(API_BASE+'/api/health',{method:'GET'},20000);
-   const t=await r.text(); let j=null; try{j=JSON.parse(t)}catch(_){}
-   if(!r.ok || !j || j.ok!==true) throw new Error((j&&j.error)||('HTTP '+r.status));
-   if(j.pdf!==true) throw new Error('PDF-сервис на сервере не активен');
-   if(j.pdfTemplate!=='SARMAT_APPROVED_CP_V1') throw new Error('На Render опубликована старая версия PDF. Требуется SARMAT_APPROVED_CP_V1.');
-   return j;
- }catch(e){
-   throw new Error('Сервис PDF недоступен. Render/API: '+(e.message||e));
- }
-}
 function customer(){const c=['company','person','phone'];let ok=true;c.forEach(id=>{const e=document.getElementById(id);e.classList.remove('invalid');if(!e.value.trim()){e.classList.add('invalid');ok=false}});if(!ok){toast('❌ Заполните компанию, контактное лицо и телефон');document.getElementById('contacts').scrollIntoView({behavior:'smooth'});return null}return {company:document.getElementById('company').value.trim(),person:document.getElementById('person').value.trim(),phone:document.getElementById('phone').value.trim(),email:document.getElementById('email').value.trim()}}
 function ensureCurrent(){const current=getCurrent();if(!current)return false;const same=order.length&&JSON.stringify(order[order.length-1])===JSON.stringify(current);if(!same){if(confirm('Текущая настроенная позиция ещё не добавлена в заказ. Добавить её?')){order.push(current);save();renderOrder();}else return false}return true}
 function ensureOrderForDocument(){
@@ -345,71 +319,60 @@ async function preview(){
  box.innerHTML='<div style="padding:30px;text-align:center">Подготавливаем коммерческое предложение…</div>';
  document.getElementById('modal').classList.add('show');
  try{
-   await checkPdfApi();
-   const r=await fetchWithTimeout(API_BASE+'/api/pdf',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({order,orderId,customer:cu,stage:1})});
+   const r=await fetch(API_BASE+'/api/pdf',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({order,orderId,customer:cu,stage:1})});
    if(!r.ok){let msg='Сервер PDF недоступен';try{const j=await r.json();msg=j.error||msg}catch(_){}throw new Error(msg)}
-   if(r.headers.get('X-SARMAT-PDF-TEMPLATE')!=='SARMAT_APPROVED_CP_V1') throw new Error('Сервер вернул не утверждённый шаблон PDF. Обновите server.py на Render.');
    const blob=await r.blob();
    if(!blob.size)throw new Error('Сервер вернул пустой PDF');
    const url=URL.createObjectURL(blob);
    box.innerHTML=`<iframe title="Коммерческое предложение PDF" src="${url}" style="display:block;width:100%;height:78vh;border:0;background:#fff;border-radius:10px"></iframe>`;
    box.dataset.pdfUrl=url;
    toast('✅ Коммерческое предложение сформировано');
- }catch(e){box.innerHTML='<div class="success-box"><h3>Не удалось сформировать PDF</h3><p>'+escapeHtml(e.message)+'</p></div>';toast('❌ '+e.message)} finally {setBusy(['pdf','print','pdf2','send'],false)}
+ }catch(e){box.innerHTML='<div class="success-box"><h3>Не удалось сформировать PDF</h3><p>'+escapeHtml(e.message)+'</p></div>';toast('❌ '+e.message)}
 }
 async function postPdf(endpoint, filename, signedToast){
  const stage=endpoint==='/api/final-pdf'?3:2;
  if(!ensureOrderForDocument())return;
- const cu=endpoint==='/api/final-pdf' ? {company:document.getElementById('company').value.trim(),person:document.getElementById('person').value.trim(),phone:document.getElementById('phone').value.trim(),email:document.getElementById('email').value.trim()} : customer();
- if(!cu)return;
- setBusy(['pdf','print','pdf2','send'],true);
- toast('⏳ Проверяем сервер PDF…');
+ const cu=customer(); if(!cu)return;
  try{
-   await checkPdfApi();
-   toast('⏳ Формируем PDF…');
-   const r=await fetchWithTimeout(API_BASE+endpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({order,orderId,customer:cu,stage})});
+   const r=await fetch(API_BASE+endpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({order,orderId,customer:cu,stage})});
    if(!r.ok){let msg='Сервер PDF недоступен';try{const j=await r.json();msg=j.error||msg}catch(_){}throw new Error(msg)}
-   if(r.headers.get('X-SARMAT-PDF-TEMPLATE')!=='SARMAT_APPROVED_CP_V1') throw new Error('Сервер вернул не утверждённый шаблон PDF. Обновите server.py на Render.');
    const blob=await r.blob();
    if(!blob.size)throw new Error('Сервер вернул пустой PDF');
    const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=filename;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),1500);
    toast(signedToast);
- }catch(e){toast('❌ '+e.message)} finally {setBusy(['pdf','print','pdf2','send'],false)}
+ }catch(e){toast('❌ '+e.message)}
 }
 async function downloadPdf(){return postPdf('/api/pdf',`${safeFileName(orderId)}_SARMAT_DOORS.pdf`,'✅ Коммерческое предложение PDF скачано')}
 async function downloadFinalPdf(){return postPdf('/api/final-pdf',`${safeFileName(orderId)}_SARMAT_DOORS_FINAL.pdf`,'✅ Финальное КП с печатью и подписью скачано')}
 async function printProposalDocument(){
  if(!ensureOrderForDocument())return;
  const cu=customer(); if(!cu)return;
- setBusy(['pdf','print','pdf2','send'],true);
- toast('⏳ Формируем утверждённый PDF для печати…');
+ const w=window.open('about:blank','_blank','width=1100,height=900');
+ if(!w){toast('❌ Разрешите всплывающие окна для печати');return}
+ w.document.write('<!doctype html><html lang="ru"><head><meta charset="utf-8"><title>SARMAT DOORS — подготовка PDF</title></head><body style="font-family:Arial,sans-serif;padding:30px">Подготавливаем PDF коммерческого предложения…</body></html>');
  try{
-   await checkPdfApi();
-   const r=await fetchWithTimeout(API_BASE+'/api/pdf',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({order,orderId,customer:cu,stage:2})});
+   const r=await fetch(API_BASE+'/api/pdf',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({order,orderId,customer:cu,stage:2})});
    if(!r.ok){let msg='Сервер PDF недоступен';try{const j=await r.json();msg=j.error||msg}catch(_){}throw new Error(msg)}
-   if(r.headers.get('X-SARMAT-PDF-TEMPLATE')!=='SARMAT_APPROVED_CP_V1') throw new Error('Сервер вернул не утверждённый шаблон PDF. Обновите server.py на Render.');
    const blob=await r.blob();
    if(!blob.size)throw new Error('Сервер вернул пустой PDF');
    const url=URL.createObjectURL(blob);
-   const w=window.open(url,'_blank');
-   if(!w){URL.revokeObjectURL(url);throw new Error('Разрешите всплывающие окна для печати PDF');}
-   toast('✅ Утверждённый PDF открыт. Печать выполняется из PDF, без страницы сайта.');
-   setTimeout(()=>URL.revokeObjectURL(url),120000);
- }catch(e){toast('❌ '+e.message)} finally {setBusy(['pdf','print','pdf2','send'],false)}
+   w.location.href=url;
+   setTimeout(()=>URL.revokeObjectURL(url),60000);
+   toast('✅ PDF коммерческого предложения подготовлен для печати');
+ }catch(e){try{w.close()}catch(_){}toast('❌ '+e.message)}
 }
 
 async function sendOrder(){
  if(!ensureOrderForDocument())return;
  const cu=customer();if(!cu)return;
- const btn=document.getElementById('send');setBusy(['pdf','print','pdf2','send'],true);btn.textContent='Отправляем…';
+ const btn=document.getElementById('send');btn.disabled=true;btn.textContent='Отправляем…';
  try{
-   await checkPdfApi();
-   const r=await fetchWithTimeout(API_BASE+'/api/order',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({order,orderId,customer:cu})});
+   const r=await fetch(API_BASE+'/api/order',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({order,orderId,customer:cu})});
    const text=await r.text();let data;try{data=JSON.parse(text)}catch(_){throw new Error('Сервер вернул не JSON. Проверьте Render API')}
    if(!r.ok||!data.ok)throw new Error(data.error||'Ошибка отправки');
    document.getElementById('pdfContent').innerHTML='<div class="success-box"><h2>✅ Заявка отправлена</h2><p><b>Номер заявки:</b> '+orderId+'</p><p>Заказ на '+order.reduce((s,x)=>s+x.qty,0)+' дверей передан в рабочий Telegram-чат SARMAT DOORS B2B.</p><p>После отправки доступно финальное коммерческое предложение с печатью и подписью.</p><p><button class="btn btn-primary" type="button" onclick="downloadFinalPdf()">📄 Скачать финальное КП с печатью и подписью</button></p></div>';
    document.getElementById('modal').classList.add('show');toast('✅ Заявка отправлена в Telegram');
- }catch(e){toast('❌ '+e.message)}finally{setBusy(['pdf','print','pdf2','send'],false);btn.textContent='Сформировать заказ'}
+ }catch(e){toast('❌ '+e.message)}finally{btn.disabled=false;btn.textContent='Сформировать заказ'}
 }
 function addPosition(){const x=getCurrent();if(!x)return;order.push(x);save();renderOrder();toast('Позиция добавлена в заказ')}
 document.getElementById('closeModal').onclick=()=>{const b=document.getElementById('pdfContent');const u=b.dataset.pdfUrl;if(u)URL.revokeObjectURL(u);delete b.dataset.pdfUrl;b.innerHTML='';document.getElementById('modal').classList.remove('show')};
