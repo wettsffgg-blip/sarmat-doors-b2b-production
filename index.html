@@ -132,7 +132,7 @@ footer{padding:45px 0;border-top:1px solid #183a50;background:#03121e;color:#a9b
 <div class="config-wrap">
 <div class="panel">
 <div class="formgrid">
-<div class="field"><label>Тип двери</label><select id="doorType"><option value="Противопожарная">Противопожарная</option><option value="Техническая">Техническая</option></select></div>
+<div class="field"><label>Тип двери</label><div style="display:flex;gap:8px;align-items:center"><select id="doorType" style="flex:1"><option value="Квартирная">Квартирная дверь</option><option value="Противопожарная">Противопожарная дверь</option><option value="Техническая">Техническая</option></select><button id="apartmentQuick" class="btn btn-ghost" type="button" style="white-space:nowrap">＋ Квартирная</button></div></div>
 <div class="field"><label>Класс огнестойкости</label><div id="classOptions" class="options"></div></div>
 <div class="field"><label>Цвет RAL</label><select id="color">
 <option value="9005" data-price="0">RAL 9005 — чёрный (без доплаты)</option>
@@ -166,7 +166,24 @@ footer{padding:45px 0;border-top:1px solid #183a50;background:#03121e;color:#a9b
 <div class="field"><label>Толщина стали коробки</label><select id="frame"><option value="0" data-mm="1,5">1,5 мм — базовая</option><option value="6" data-mm="2,0">2,0 мм (+6%)</option><option value="12" data-mm="2,5">2,5 мм (+12%)</option></select></div>
 <div class="field"><label>Открывание</label><select id="opening"><option value="Левое">Левое</option><option value="Правое">Правое</option></select></div>
 </div>
-<div style="margin-top:20px" class="field"><label>Фурнитура</label><div id="hardwareOptions" class="options"></div><label style="display:flex;align-items:center;gap:10px;margin-top:12px;cursor:pointer"><input id="closer" type="checkbox"> <span>Доводчик дверной — <b>400 000 сум</b></span></label></div>
+<div id="apartmentOptions" style="display:none;margin-top:20px">
+<hr style="border-color:#1f4258;margin:22px 0">
+<div class="eyebrow">Отделка квартирной двери</div>
+<div class="formgrid" style="margin-top:12px">
+<div class="field"><label>Наружная</label><select id="outerLmdfFinish"><option value="laminated">Ламинированная</option><option value="painted">Крашеная</option><option value="veneered">Шпонированная</option></select></div>
+<div class="field"><label>Толщина</label><select id="outerLmdfThickness"><option value="10">10 мм</option><option value="12">12 мм</option></select></div>
+<div class="field"><label>Внутренняя</label><select id="innerLmdfFinish"><option value="laminated">Ламинированная</option><option value="painted">Крашеная</option><option value="veneered">Шпонированная</option></select></div>
+<div class="field"><label>Толщина</label><select id="innerLmdfThickness"><option value="8">8 мм</option><option value="10">10 мм</option></select></div>
+<div class="field"><label>Контуры уплотнения</label><select id="sealContours"><option value="2">2 контура</option><option value="3">3 контура</option></select></div>
+<div class="field"><label>Нижний замок с ручкой</label><select id="lockSystem"><option value="mechanical">Обычный механический</option><option value="electronic">Электронный</option></select></div>
+<div class="field" id="mechanicalLockField"><label>Вариант обычного замка</label><select id="mechanicalLock"><option value="basic">Цилиндровый усиленный</option><option value="security">Цилиндровый повышенной защиты</option><option value="premium">Премиальный сувальдно-цилиндровый</option></select></div>
+<div class="field" id="electronicLockField" style="display:none"><label>Вариант электронного замка</label><select id="electronicLock"><option value="codecard">Код + карта</option><option value="fingerprint">Отпечаток + код + карта</option><option value="smart">Smart: код + карта + приложение</option></select></div>
+<div class="field"><label>Количество замков</label><select id="lockCount"><option value="2">2 замка</option><option value="3">3 замка</option></select></div>
+<div class="field"><label>Верхний сувальдный замок</label><select id="upperLock"><option value="0">Не устанавливать</option><option value="1">Установить дополнительно</option></select></div>
+</div>
+<div class="small" style="margin-top:10px"><b>Состав замковой группы:</b> нижний замок с ручкой — основной, обязательный; с внутренней стороны — отдельная задвижка «ночник», обязательная; верхний сувальдный замок — дополнительный, устанавливается по желанию клиента.</div>
+</div>
+<div id="generalHardwareBlock" style="margin-top:20px" class="field"><label>Фурнитура</label><div id="hardwareOptions" class="options"></div><label style="display:flex;align-items:center;gap:10px;margin-top:12px;cursor:pointer"><input id="closer" type="checkbox"> <span>Доводчик дверной — <b>400 000 сум</b></span></label></div>
 <div class="formgrid" style="margin-top:20px">
 <div class="field"><label>Монтаж и доставка</label><select id="install"><option value="600000">Да — 600 000 сум/дверь</option><option value="0">Нет</option></select></div>
 <div class="field"><label>Количество дверей в этой позиции</label><input id="qty" type="number" min="1" max="9999" value="1"></div>
@@ -248,8 +265,18 @@ footer{padding:45px 0;border-top:1px solid #183a50;background:#03121e;color:#a9b
 <script>
 const money=n=>new Intl.NumberFormat('ru-RU').format(Math.round(n))+' сум';
 const API_BASE='https://sarmat-doors-b2b-production.onrender.com';
-const classes=[['EI30',1],['EI60',1.5],['EI90',2.25],['EI120',3.375]];
+const fireClasses=[['EI30',1],['EI60',1.5],['EI90',2.25],['EI120',3.375]];
+const apartmentClasses=[['Не противопожарная',1],['EI30',1.5],['EI60',2.25]];
 const hardware=[['fuaro',550000,'Fuaro: замок + ручка'],['panic',1100000,'Антипаника: комплект']];
+const apartmentPricing={
+ outerLmdf:{laminated:{10:450000,12:550000},painted:{10:650000,12:800000},veneered:{10:900000,12:1100000}},
+ innerLmdf:{laminated:{8:300000,10:400000},painted:{8:500000,10:650000},veneered:{8:700000,10:850000}},
+ sealContours:{2:0,3:120000},
+ nightLock:280000,
+ lowerLock:{basic:450000,security:600000,premium:850000},
+ electronicLock:{codecard:1500000,fingerprint:1900000,smart:2300000},
+ upperLock:450000
+};
 const CLOSER_PRICE=400000, BASE=1600000, RARE_RAL_PRICE=200000;
 let selectedClass='EI30', selectedHardware='fuaro', order=[], orderId=makeOrderId();
 const money0=n=>Math.round(n);
@@ -258,35 +285,80 @@ function makeOrderId(){const d=new Date();const y=d.getFullYear();const m=String
 function val(id){return Number(document.getElementById(id).value)}
 function getRal(){const s=document.getElementById('color'), o=s.selectedOptions[0]; return {code:s.value, text:o.textContent, price:Number(o.dataset.price||0), rare:s.value==='RARE'} }
 function makeOptions(){
- const technical=document.getElementById('doorType').value==='Техническая';
+ const doorType=document.getElementById('doorType').value;
+ const technical=doorType==='Техническая';
+ const apartment=doorType==='Квартирная';
  const classWrap=document.getElementById('classOptions').parentElement;
  classWrap.style.display=technical?'none':'';
- // Техническая дверь не предусматривает антипанику: принудительно оставляем только Fuaro.
+ document.getElementById('apartmentOptions').style.display=apartment?'block':'none';
+ const activeClasses=apartment?apartmentClasses:fireClasses;
+ if(!activeClasses.some(x=>x[0]===selectedClass)) selectedClass=activeClasses[0][0];
  if(technical && selectedHardware==='panic') selectedHardware='fuaro';
- document.getElementById('classOptions').innerHTML=classes.map(x=>`<button type="button" class="option ${x[0]===selectedClass?'active':''}" data-class="${x[0]}">${x[0]}</button>`).join('');
+ document.getElementById('classOptions').innerHTML=activeClasses.map(x=>`<button type="button" class="option ${x[0]===selectedClass?'active':''}" data-class="${x[0]}">${x[0]}</button>`).join('');
  const hardwareOptions=technical?hardware.filter(x=>x[0]==='fuaro'):hardware;
- document.getElementById('hardwareOptions').innerHTML=hardwareOptions.map(x=>`<button type="button" class="option ${x[0]===selectedHardware?'active':''}" data-hw="${x[0]}">${x[2]} · ${money(x[1])}</button>`).join('');
+ document.getElementById('hardwareOptions').innerHTML=hardwareOptions.map(x=>`<button type="button" class="option ${x[0]===selectedHardware?'active':''}" data-hw="${x[0]}">${x[2]} · ${money(x[1])}</button>`).join(''); const generalHardwareBlock=document.getElementById('generalHardwareBlock'); if(generalHardwareBlock) generalHardwareBlock.style.display=apartment?'none':'';
  document.querySelectorAll('[data-class]').forEach(b=>b.onclick=()=>{selectedClass=b.dataset.class;makeOptions();calc()});
  document.querySelectorAll('[data-hw]').forEach(b=>b.onclick=()=>{selectedHardware=b.dataset.hw;makeOptions();calc()});
+ const lockSystem=document.getElementById('lockSystem');
+ if(lockSystem){
+   lockSystem.onchange=()=>{
+     const electronic=lockSystem.value==='electronic';
+     document.getElementById('mechanicalLockField').style.display=electronic?'none':'';
+     document.getElementById('electronicLockField').style.display=electronic?'':'none';
+     calc();
+   };
+   const electronic=lockSystem.value==='electronic';
+   document.getElementById('mechanicalLockField').style.display=electronic?'none':'';
+   document.getElementById('electronicLockField').style.display=electronic?'':'none';
+ }
+ const lockCount=document.getElementById('lockCount'), upperLock=document.getElementById('upperLock');
+ if(lockCount && upperLock){
+   lockCount.value=upperLock.value==='1'?'3':'2';
+   lockCount.onchange=()=>{
+     upperLock.value=lockCount.value==='3'?'1':'0';
+     calc();
+   };
+   upperLock.onchange=()=>{
+     lockCount.value=upperLock.value==='1'?'3':'2';
+     calc();
+   };
+ }
 }
+
 function sync(a,b){document.getElementById(a).addEventListener('input',e=>{document.getElementById(b).value=e.target.value;calc()});document.getElementById(b).addEventListener('input',e=>{document.getElementById(a).value=e.target.value;calc()})}
 function calc(){
  const doorType=document.getElementById('doorType').value;
  const technical=doorType==='Техническая';
- const w=val('w'), h=val('h'), area=w*h/1e6, factor=technical?1:(classes.find(x=>x[0]===selectedClass)[1]);
+ const apartment=doorType==='Квартирная';
+ const w=val('w'), h=val('h'), area=w*h/1e6;
+ const activeClasses=apartment?apartmentClasses:fireClasses;
+ const factor=technical?1:(activeClasses.find(x=>x[0]===selectedClass)||activeClasses[0])[1];
  const leafMarkup=Number(document.getElementById('leaf').value), frameMarkup=Number(document.getElementById('frame').value), inst=Number(document.getElementById('install').value);
  const leafMm=document.getElementById('leaf').selectedOptions[0].dataset.mm, frameMm=document.getElementById('frame').selectedOptions[0].dataset.mm;
- const ral=getRal(), hw=hardware.find(x=>x[0]===(technical?'fuaro':selectedHardware)), closer=document.getElementById('closer').checked;
+ const ral=getRal(), hw=hardware.find(x=>x[0]===(technical?'fuaro':selectedHardware)), closer=!apartment && document.getElementById('closer').checked;
+ let optionsCost=0, apartmentDetails=null;
+ if(apartment){
+   const outerFinish=document.getElementById('outerLmdfFinish').value, outerThickness=Number(document.getElementById('outerLmdfThickness').value);
+   const innerFinish=document.getElementById('innerLmdfFinish').value, innerThickness=Number(document.getElementById('innerLmdfThickness').value);
+   const sealContours=Number(document.getElementById('sealContours').value), lockSystem=document.getElementById('lockSystem').value;
+   const mechanicalLock=document.getElementById('mechanicalLock').value, electronicLock=document.getElementById('electronicLock').value, upperLock=Number(document.getElementById('upperLock').value);
+   const outerCost=apartmentPricing.outerLmdf[outerFinish][outerThickness], innerCost=apartmentPricing.innerLmdf[innerFinish][innerThickness];
+   const lowerLockCost=lockSystem==='electronic'?apartmentPricing.electronicLock[electronicLock]:apartmentPricing.lowerLock[mechanicalLock];
+   const upperCost=upperLock?apartmentPricing.upperLock:0;
+   optionsCost=outerCost+innerCost+apartmentPricing.sealContours[sealContours]+apartmentPricing.nightLock+lowerLockCost+upperCost;
+   apartmentDetails={outerLmdfFinish:outerFinish,outerLmdfThickness,outerLmdfCost:outerCost,innerLmdfFinish:innerFinish,innerLmdfThickness,innerLmdfCost:innerCost,sealContours,sealCost:apartmentPricing.sealContours[sealContours],lockSystem,mechanicalLock,electronicLock,lockLabel:lockSystem==='electronic'?document.getElementById('electronicLock').selectedOptions[0].textContent:document.getElementById('mechanicalLock').selectedOptions[0].textContent,nightLockCost:apartmentPricing.nightLock,lowerLockCost,upperLock,upperLockCost:upperCost};
+ }
  const base=area*BASE*factor, steel=base*((1+leafMarkup/100)*(1+frameMarkup/100)-1), closerCost=closer?CLOSER_PRICE:0;
- const total=base+steel+hw[1]+closerCost+ral.price+inst;
+ const hardwareCost=apartment?0:hw[1]; const total=base+steel+hardwareCost+closerCost+ral.price+inst+optionsCost;
  document.getElementById('rareRal').style.display=ral.rare?'block':'none';
  document.getElementById('singleTotal').textContent=money(total); document.getElementById('area').textContent=area.toFixed(2)+' м²';
  document.getElementById('base').textContent=money(area*BASE); document.getElementById('doorTypeLine').textContent=doorType; document.getElementById('classFactor').textContent=technical?'Не применяется':selectedClass;
  document.getElementById('leafLine').textContent=leafMm+' мм'; document.getElementById('frameLine').textContent=frameMm+' мм';
- document.getElementById('hardwareLine').textContent=hw[2]+' — '+money(hw[1])+(closer?' + доводчик — '+money(CLOSER_PRICE):'');
+ document.getElementById('hardwareLine').textContent=apartment?('Обязательные замки + '+apartmentDetails.lockLabel+(apartmentDetails.upperLock?' + верхний сувальдный':'')):hw[2]+' — '+money(hw[1])+(closer?' + доводчик — '+money(CLOSER_PRICE):'');
  document.getElementById('colorLine').textContent=ral.rare?money(ral.price):'Без доплаты'; document.getElementById('installLine').textContent=money(inst);
- return {doorType,w,h,area,factor,leafMarkup,frameMarkup,leafMm,frameMm,ral,inst,hw,closer,closerCost,total,qty:val('qty'),comment:document.getElementById('comment').value,opening:document.getElementById('opening').value};
+ return {doorType,w,h,area,factor,leafMarkup,frameMarkup,leafMm,frameMm,ral,inst,hw,closer,closerCost,total,qty:val('qty'),comment:document.getElementById('comment').value,opening:document.getElementById('opening').value,apartmentDetails};
 }
+
 function validateCurrent(){
  const c=calc(); const errs=[]; ['wNum','hNum','qty'].forEach(id=>document.getElementById(id).classList.remove('invalid'));
  if(c.w<800||c.w>1600||c.w%50!==0){errs.push('Ширина должна быть 800–1600 мм с шагом 50 мм');document.getElementById('wNum').classList.add('invalid')}
@@ -295,12 +367,12 @@ function validateCurrent(){
  if(c.ral.rare && !/^\d{4}$/.test(document.getElementById('rareRal').value.trim())) errs.push('Для редкого RAL укажите номер из 4 цифр');
  return {c,errs};
 }
-function getCurrent(){const v=validateCurrent();if(v.errs.length){toast('❌ '+v.errs[0]);return null}const c=v.c;const cls=c.doorType==='Техническая'?'—':selectedClass;return {...c,cls,hwText:c.hw[2],ralText:c.ral.rare?'RAL '+document.getElementById('rareRal').value.trim():c.ral.code};}
+function getCurrent(){const v=validateCurrent();if(v.errs.length){toast('❌ '+v.errs[0]);return null}const c=v.c;const cls=c.doorType==='Техническая'?'—':selectedClass;const hwText=c.apartmentDetails?('Обязательный ночник + '+c.apartmentDetails.lockLabel+(c.apartmentDetails.upperLock?' + верхний сувальдный':'')+(c.closer?' + доводчик':'')).trim():c.hw[2];return {...c,cls,hwText,ralText:c.ral.rare?'RAL '+document.getElementById('rareRal').value.trim():c.ral.code};}
 function save(){localStorage.setItem('sarmatOrder15',JSON.stringify({order,orderId}));}
 function restore(){try{const x=JSON.parse(localStorage.getItem('sarmatOrder15')||'null');if(x?.order){order=x.order.map(v=>({...v,doorType:v.doorType||'Противопожарная'}));orderId=x.orderId||orderId}}catch(e){}}
 function renderOrder(){
  const box=document.getElementById('orderList'); if(!order.length){box.innerHTML='<div class="small">Заказ пока пуст. Добавьте одну или несколько позиций.</div>';return}
- box.innerHTML='<h3>Ваш B2B-заказ · '+escapeHtml(orderId)+'</h3>'+order.map((x,i)=>`<div class="position-card"><div style="display:flex;justify-content:space-between;gap:14px"><div><b>Позиция №${i+1}: ${escapeHtml(x.doorType||'Противопожарная')} · ${escapeHtml(x.cls||'—')} · ${escapeHtml(x.w)}×${escapeHtml(x.h)} мм · ${escapeHtml(x.qty)} шт.</b><div class="order-meta"><b>Открывание:</b> ${escapeHtml(x.opening)}<br><b>Полотно:</b> ${escapeHtml(x.leafMm)} мм · <b>Коробка:</b> ${escapeHtml(x.frameMm)} мм<br><b>Фурнитура:</b> ${escapeHtml(x.hwText)}<br><b>Доводчик:</b> ${x.closer?'Да — '+money(CLOSER_PRICE):'Нет'}<br><b>RAL:</b> ${escapeHtml(x.ralText)}<br><b>Монтаж/доставка:</b> ${x.inst?money(x.inst)+' / дверь':'Нет'}</div>${x.comment?`<div class="order-note"><b>Примечание:</b> ${escapeHtml(x.comment)}</div>`:''}</div><div style="text-align:right"><b>${money(x.total*x.qty)}</b><br><button class="remove" data-i="${i}" type="button">Удалить</button></div></div></div>`).join('')+`<div class="line" style="font-size:17px"><span>ИТОГО ПО ЗАКАЗУ</span><strong>${money(order.reduce((s,x)=>s+x.total*x.qty,0))}</strong></div>`;
+ box.innerHTML='<h3>Ваш B2B-заказ · '+escapeHtml(orderId)+'</h3>'+order.map((x,i)=>`<div class="position-card"><div style="display:flex;justify-content:space-between;gap:14px"><div><b>Позиция №${i+1}: ${escapeHtml(x.doorType||'Противопожарная')} · ${escapeHtml(x.cls||'—')} · ${escapeHtml(x.w)}×${escapeHtml(x.h)} мм · ${escapeHtml(x.qty)} шт.</b><div class="order-meta"><b>Открывание:</b> ${escapeHtml(x.opening)}<br><b>Полотно:</b> ${escapeHtml(x.leafMm)} мм · <b>Коробка:</b> ${escapeHtml(x.frameMm)} мм<br><b>Фурнитура:</b> ${escapeHtml(x.hwText)}<br>${x.apartmentDetails?`<b>Наружная МДФ:</b> ${escapeHtml(x.apartmentDetails.outerLmdfFinish)} ${escapeHtml(x.apartmentDetails.outerLmdfThickness)} мм · <b>Внутренняя МДФ:</b> ${escapeHtml(x.apartmentDetails.innerLmdfFinish)} ${escapeHtml(x.apartmentDetails.innerLmdfThickness)} мм<br><b>Уплотнение:</b> ${escapeHtml(x.apartmentDetails.sealContours)} контура · <b>Нижний ночник:</b> обязательно · <b>Верхний сувальдный:</b> ${x.apartmentDetails.upperLock?'Да':'Нет'}<br>`:''}<b>Доводчик:</b> ${x.closer?'Да — '+money(CLOSER_PRICE):'Нет'}<br><b>RAL:</b> ${escapeHtml(x.ralText)}<br><b>Монтаж/доставка:</b> ${x.inst?money(x.inst)+' / дверь':'Нет'}</div>${x.comment?`<div class="order-note"><b>Примечание:</b> ${escapeHtml(x.comment)}</div>`:''}</div><div style="text-align:right"><b>${money(x.total*x.qty)}</b><br><button class="remove" data-i="${i}" type="button">Удалить</button></div></div></div>`).join('')+`<div class="line" style="font-size:17px"><span>ИТОГО ПО ЗАКАЗУ</span><strong>${money(order.reduce((s,x)=>s+x.total*x.qty,0))}</strong></div>`;
  box.querySelectorAll('.remove').forEach(b=>b.onclick=()=>{order.splice(Number(b.dataset.i),1);save();renderOrder()});
 }
 function escapeHtml(s){return String(s).replace(/[&<>'"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[m]))}
@@ -382,9 +454,13 @@ document.getElementById('pdf').onclick=preview;
 document.getElementById('pdf2').onclick=downloadPdf;
 document.getElementById('send').onclick=sendOrder;
 document.getElementById('print').onclick=printProposalDocument;
-['doorType','color','leaf','frame','opening','install','qty','comment','rareRal'].forEach(id=>document.getElementById(id).addEventListener('input',calc)); document.getElementById('doorType').addEventListener('change',()=>{makeOptions();calc()});
+['doorType','color','leaf','frame','opening','install','qty','comment','rareRal','outerLmdfFinish','outerLmdfThickness','innerLmdfFinish','innerLmdfThickness','sealContours','mechanicalLock','electronicLock','upperLock'].forEach(id=>document.getElementById(id)?.addEventListener('input',calc));
+function syncApartmentQuickButton(){const type=document.getElementById('doorType')?.value;const btn=document.getElementById('apartmentQuick');if(btn) btn.style.display=(type==='Квартирная')?'inline-flex':'none';}
+document.getElementById('doorType').addEventListener('change',()=>{makeOptions();calc();syncApartmentQuickButton()});
+document.getElementById('lockSystem')?.addEventListener('change',()=>{makeOptions();calc()});
+document.getElementById('apartmentQuick')?.addEventListener('click',()=>{document.getElementById('doorType').value='Квартирная';makeOptions();calc();document.getElementById('apartmentOptions').scrollIntoView({behavior:'smooth',block:'center'});});
 document.getElementById('closer').addEventListener('change',calc);
-sync('w','wNum');sync('h','hNum');makeOptions();restore();
+sync('w','wNum');sync('h','hNum');makeOptions();restore();syncApartmentQuickButton();
 try{const cu0=JSON.parse(localStorage.getItem('sarmatCustomer15')||'null');if(cu0){['company','person','phone','email'].forEach(id=>{const el=document.getElementById(id);if(el&&cu0[id]!=null)el.value=cu0[id]})}}catch(e){}
 ['company','person','phone','email'].forEach(id=>document.getElementById(id)?.addEventListener('input',()=>localStorage.setItem('sarmatCustomer15',JSON.stringify({company:document.getElementById('company').value,person:document.getElementById('person').value,phone:document.getElementById('phone').value,email:document.getElementById('email').value}))));
 calc();renderOrder();
